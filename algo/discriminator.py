@@ -4,11 +4,11 @@
 @Github: https://github.com/HuangJiaLian
 @Date: 2019-10-11 19:18:07
 @LastEditors: Jack Huang
-@LastEditTime: 2019-11-17 15:35:10
+@LastEditTime: 2019-11-18 17:36:07
 '''
 
 import tensorflow as tf 
-
+import numpy as np 
 
 class Discriminator:
     def __init__(self, env):
@@ -19,15 +19,20 @@ class Discriminator:
         """
 
         with tf.variable_scope('discriminator'):
-
-            self.obs_t = tf.placeholder(tf.float32, shape=[None] + list(env.observation_space.shape), name='obs') # s
-            self.nobs_t = tf.placeholder(tf.float32, shape=[None] + list(env.observation_space.shape), name='nobs') # s'
+            
+            self.only_position = True
+            if self.only_position:
+                self.obs_t = tf.placeholder(tf.float32, shape=[None,1], name='obs') # s
+                self.nobs_t = tf.placeholder(tf.float32, shape=[None,1], name='nobs') # s'
+            else:
+                self.obs_t = tf.placeholder(tf.float32, shape=[None] + list(env.observation_space.shape), name='obs') # s
+                self.nobs_t = tf.placeholder(tf.float32, shape=[None] + list(env.observation_space.shape), name='nobs') # s'
             self.labels = tf.placeholder(tf.float32, [None, 1], name='labels')
             self.lprobs = tf.placeholder(tf.float32, [None, 1], name='log_probs') # log( \pi(a|s) )
-
+                        
             self.gamma = 1.0
-            self.score_discrim = False
-            self.only_position = False
+            self.score_discrim = True
+            
             
             rew_input = self.obs_t
                         
@@ -40,6 +45,7 @@ class Discriminator:
                 self.h_s = h_s = self.value_network(self.obs_t)
             
             log_f = self.reward + self.gamma*h_ns - h_s
+            self.f_reward = tf.exp(log_f)
             log_p = self.lprobs
 
             log_fp = tf.reduce_logsumexp([log_f, log_p], axis=0)
@@ -71,17 +77,28 @@ class Discriminator:
                                                                       self.lprobs: lprobs,
                                                                       self.labels: labels
                                                                       })
-
-    def get_scores(self, obs_t, **kwargs):
-        if self.score_discrim:
-            scores = tf.get_default_session().run(self.discrim_output, feed_dict={self.obs_t: obs_t,
-                                                                            self.nobs_t: kwargs['nobs_t'],
-                                                                            self.lprobs: kwargs['lprobs']
-                                                                            })
-            scores = np.log(scores) - np.log(1-scores)
-        else:
-            scores = tf.get_default_session().run(self.reward, feed_dict={self.obs_t: obs_t})
+    # g reward
+    def get_scores(self, obs_t):
+        scores = tf.get_default_session().run(self.reward, feed_dict={self.obs_t: obs_t})
         return scores
+    
+    # f reward
+    def get_f_scores(self):
+        scores = tf.get_default_session().run(self.f_reward, feed_dict={self.obs_t: obs_t,
+                                                                            self.nobs_t: kwargs['nobs_t']
+                                                                            })
+        return scores
+
+    # log reward:logD-log(1-D)
+    def get_l_scores(self, obs_t, nobs_t, lprobs):
+        scores = tf.get_default_session().run(self.discrim_output, feed_dict={self.obs_t: obs_t,
+                                                                            self.nobs_t: nobs_t,
+                                                                            self.lprobs: lprobs
+                                                                            })
+        scores = np.log(scores) - np.log(1-scores)
+        return scores
+
+    
 
     def get_trainable_variables(self):
         return tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, self.scope)

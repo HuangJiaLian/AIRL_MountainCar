@@ -4,7 +4,7 @@
 @Github: https://github.com/HuangJiaLian
 @Date: 2019-10-10 17:30:07
 @LastEditors: Jack Huang
-@LastEditTime: 2019-11-14 19:44:04
+@LastEditTime: 2019-11-18 19:23:52
 '''
 # hhhh
 from tensorflow.keras import models, layers, optimizers
@@ -54,7 +54,7 @@ def main(env_name):
         actions = []
         returns = []
         for step in range(max_steps):
-            env.render()
+            # env.render()
             action = get_action(state=state)
             # 记录状态
             observations.append(state)

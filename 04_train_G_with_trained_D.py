@@ -4,7 +4,7 @@
 @Github: https://github.com/HuangJiaLian
 @Date: 2019-10-10 19:27:08
 @LastEditors: Jack Huang
-@LastEditTime: 2019-11-18 19:24:52
+@LastEditTime: 2019-11-19 11:15:32
 '''
 
 import tensorflow as tf 
@@ -67,17 +67,31 @@ def main():
     saveReturnEvery = 100
     num_expert_tra = 20 
 
+    # Saver to save all the variables
+    model_save_path = './model/'
+    model_name = 'airl'
+    saver = tf.train.Saver(var_list=tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='discriminator')) 
+    ckpt = tf.train.get_checkpoint_state(model_save_path)
+    if ckpt and ckpt.model_checkpoint_path:
+            print('Found Saved Model.')
+            # -1 代表最新的
+            ckpt_to_restore = ckpt.all_model_checkpoint_paths[-1]
+    else:
+        print('No Saved Model. Exiting')
+        exit()
+
     # Logger 用来记录训练过程
     train_logger = log.logger(logger_name='AIRL_MCarV0_Training_Log', 
         logger_path='./trainingLog/', col_names=['Episode', 'Actor(D)', 'Expert Mean(D)','Actor','Expert Mean'])
     
-    # Saver to save all the variables
-    model_save_path = './model/'
-    model_name = 'airl'
-    saver = tf.train.Saver(max_to_keep=int(max_episode/100))
-
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
+        
+        # Restore Model
+        if ckpt and ckpt.model_checkpoint_path:
+            saver.restore(sess,ckpt_to_restore)
+            print('Model Restored.')
+        
         obs = env.reset() 
         # do NOT use original rewards to update policy
         for episode in range(max_episode):
@@ -143,8 +157,7 @@ def main():
                 next_observations_for_d = (next_observations[:,0]).reshape(-1,1)
                 expert_observations_for_d = (expert_observations[:,0]).reshape(-1,1)
                 next_expert_observations_for_d = (next_expert_observations[:,0]).reshape(-1,1)
-            log_probabilities_for_d = log_probabilities.reshape(-1,1)
-            log_expert_probabilities_for_d = log_expert_probabilities.reshape(-1,1)
+                
 
             # 数据排整齐
             
@@ -164,7 +177,7 @@ def main():
             # 这里两类数据量的大小不对等啊
             # 应该可以优化的
             batch_size = 32
-            for i in range(1):
+            for i in range(2):
                 # 抽一个G的batch
                 nobs_batch, obs_batch, act_batch, lprobs_batch = \
                     sample_batch(obs_next, obs, acts, path_probs, batch_size=batch_size)
@@ -183,27 +196,27 @@ def main():
                 # 若是只和状态相关，下面这个这个没有用
                 act_batch = np.concatenate([act_batch, expert_act_batch], axis=0)
                 lprobs_batch = np.concatenate([lprobs_batch, expert_lprobs_batch], axis=0)
-                D.train(obs_t = obs_batch, 
-                        nobs_t = nobs_batch, 
-                        lprobs = lprobs_batch, 
-                        labels = labels)
+            # if episode <= 9000:
+            #             D.train(obs_t = obs_batch, 
+            #                 nobs_t = nobs_batch, 
+            #                 lprobs = lprobs_batch, 
+            #                 labels = labels)
+            # else:
+            #     pass
+
             if episode % 50 == 0:
                 drawRewards(D=D, episode=episode, path='./trainingLog/')
 
             # output of this discriminator is reward
-            if D.score_discrim == False:
-                d_rewards = D.get_scores(obs_t=observations_for_d)
-            else:
-                d_rewards = D.get_l_scores(obs_t=observations_for_d, nobs_t=next_observations_for_d, lprobs=log_probabilities_for_d)
+            d_rewards = D.get_scores(obs_t=observations_for_d)
+            # d_rewards = D.get_scores(obs_t=observations, nobs_t=next_observations, lprobs=log_probabilities)
             d_rewards = np.reshape(d_rewards, newshape=[-1]).astype(dtype=np.float32)
             d_actor_return = np.sum(d_rewards)
             # print(d_actor_return)
 
             # d_expert_return: Just For Tracking
-            if D.score_discrim == False:
-                expert_d_rewards = D.get_scores(obs_t=expert_observations_for_d)
-            else:
-                expert_d_rewards = D.get_l_scores(obs_t=expert_observations_for_d, nobs_t= next_expert_observations_for_d,lprobs= log_expert_probabilities_for_d )
+            expert_d_rewards = D.get_scores(obs_t=expert_observations_for_d)
+            # expert_d_rewards = D.get_scores(obs_t=expert_observations, nobs_t= next_expert_observations,lprobs= log_expert_probabilities)
             expert_d_rewards = np.reshape(expert_d_rewards, newshape=[-1]).astype(dtype=np.float32)
             d_expert_return = np.sum(expert_d_rewards)/num_expert_tra
             # print(d_expert_return)
@@ -233,7 +246,7 @@ def main():
             PPO.assign_policy_parameters()
 
 
-            for epoch in range(10):
+            for epoch in range(160):
                 sample_indices = np.random.randint(low=0, high=observations.shape[0],
                                                    size=32)  # indices are in [low, high)
                 sampled_inp = [np.take(a=a, indices=sample_indices, axis=0) for a in inp]  # sample training data
