@@ -132,6 +132,10 @@ No, this is not right.　Use the state-only reward function, the agent can learn
 - **What's RL algorithm learned?**
 RL algorithm learned a good policy, it can tell the agent what is the best action $a$, when it in one state (observation) $s$. Specifically, the learned policy is a lot of distribution of action. There are different distribution at different state(observation).
 
+- **You said you learned the expert's policy, but the agent's returns are bellow the expert's mean return. How could you said the agent learned the expert's policy?**
+Although the agent's return can't reach to the expert's, but it's above `-200`, which means the car reach to the right hill within 200 steps. Beside, there are another reason why agent's return can't reach to the mean return of expert's. **The agent took stochastic policy**, which means that the action to take was sample from action distribution, rather than directly chose the most probable one. See Append.B for detail.
+
+
 - **Why the agent goes down, if goes down will make the reward less?**
 You don't understand the basics of RL. The main purpose of RL algorithms is to maximize the expected **return--the reward sum along all trajectory**. So that, although it seems that going down makes the total reward less, but the behavior will get more reward and more return in the end of the episode. 
 
@@ -177,4 +181,12 @@ Episode 23000:
 <img src='./data/23000_learned_rewards.png' width='50%'>
 </p>
 
+### Appendix B: The return comparison between stochastic and deterministic policy
+<p align='center'>
+<img src='./data/MCarV0_Testing_Log_Stochastic.png' width='50%'>
+</p>
+
+<p align='center'>
+<img src='./data/MCarV0_Testing_Log_Deterministic.png' width='50%'>
+</p>
 
