@@ -1,75 +1,82 @@
-'''
-@Description: 
-@Author: Jack Huang
-@Github: https://github.com/HuangJiaLian
-@Date: 2019-10-10 17:30:07
-@LastEditors: Jack Huang
-@LastEditTime: 2019-11-18 19:23:52
-'''
-# hhhh
 from tensorflow.keras import models, layers, optimizers
 import gym 
 import numpy as np 
+import os, shutil
 
-# 专家策略
+# A very easy policy used for finding expert trajectories
 def get_action(state):
     if state[-1] < 0:
-        action = 0 # 向左
+        action = 0 # full throttle reverse
     elif state[-1] > 0:
-        action = 2 # 向右
+        action = 2 # full throttle forward
     else:
-        action = 1
+        action = 1 # zero throttle
     return action
 
 
-# 用来保存专家轨迹用的
-def open_file_and_save(file_path, data):
+# Function used for saveing expert trajectories
+def open_file_and_save(path, name, data):
     try:
-        with open(file_path, 'ab') as f_handle:
+        with open(os.path.join(path,name), 'ab') as f_handle:
             np.savetxt(f_handle, data, fmt='%s')
     except FileNotFoundError:
-        with open(file_path, 'wb') as f_handle:
+        with open(os.path.join(path,name), 'wb') as f_handle:
             np.savetxt(f_handle, data, fmt='%s')
 
 
 
 def main(env_name):
-    # 准备环境
+    # Initialise gym environment
     env = gym.make(env_name)
     ob_space = env.observation_space
     action_space = env.action_space.n 
-    # 表示玩episodes次游戏, 拿这么多条专家轨迹
+    
+    # Number of expert trajectories
     episodes = 20
-    # 每一轮游戏里规定的最大步数
+    
+    # The maximum steps in one episode
     max_steps = 200
     scores = []
 
+    # Path for storing trajectories
+    path = 'exp_traj'
+    if os.path.exists(path) != True:
+        os.makedirs(path)
+    else:
+        # Delete previous trajectories
+        shutil.rmtree(path) 
+        os.makedirs(path)
+    
     for episode in range(episodes):
         state = env.reset()
         score = 0
         done = False 
         
-        # 开始玩每把游戏前，准备几个管子，用来收集过程中遇到的东西
+        # Variables to collect data would be created in this episode
         observations = []
         actions = []
         returns = []
         for step in range(max_steps):
+
+            # Uncomment rendering if run on a server
             # env.render()
             action = get_action(state=state)
-            # 记录状态
+
+            # Record states and actions
             observations.append(state)
             actions.append(action)
 
+            # Interface with gym environment
             next_state, reward, done, _ = env.step(action)
             score += reward
             state = next_state
             if done:
                 break
-        
+        # Record the return(the rewards sum of this episode)
         print('Return:', score)
         scores.append(score)    
 
-        # 这样做都是为了s'
+        # Get the next states of current states
         next_observations = observations[1:]
         observations = observations[:-1]
         actions = actions[:-1]
@@ -78,13 +85,13 @@ def main(env_name):
         observations = np.reshape(observations, newshape=[-1] + list(ob_space.shape))
         actions = np.array(actions).astype(dtype=np.int32)
 
-        open_file_and_save('exp_traj/next_observations.csv', next_observations)
-        open_file_and_save('exp_traj/observations.csv', observations)
-        open_file_and_save('exp_traj/actions.csv', actions)
+        open_file_and_save(path = 'exp_traj', name = 'next_observations.csv', data = next_observations)
+        open_file_and_save(path = 'exp_traj', name = 'observations.csv', data = observations)
+        open_file_and_save(path = 'exp_traj', name = 'actions.csv', data = actions)
 
     
     scores = np.array(scores).astype(dtype=np.int32)
-    open_file_and_save('exp_traj/returns.csv', scores)
+    open_file_and_save(path = 'exp_traj', name = 'returns.csv', data = scores)
     env.close()
 
 
