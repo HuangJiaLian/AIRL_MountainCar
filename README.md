@@ -56,10 +56,7 @@ def get_action(state):
 I used 20, 50, 200 expert demonstrations to get different experimental results, and found that 20 expert demonstrations are totally enough.
 
 ### AIRL train process
-<p align='center'>
-<img src='./data/AIRL_MCarV0_Training_Log.png' width='50%'>
-</p>
-
+<img src="https://raw.githubusercontent.com/HuangJiaLian/DataBase0/master/uPic/AIRL_MCarV0_Training_Log.png" style="zoom:72%;" />
 
 Score from discriminator:
 - Yellow: The mean return of 20 expert demonstrations;
@@ -85,16 +82,13 @@ Although the mean return of generator can't reach to the expert's. But in our ca
 
 ### The learned reward function
 The learned reward function $g_{\theta}(s)$ at the very end:
-<p align='center'>
-<img src='./data/23950_learned_rewards.png' width='50%'>
-</p>
+
+<img src="https://raw.githubusercontent.com/HuangJiaLian/DataBase0/master/uPic/23950_learned_rewards.png" style="zoom:50%;" />
 
 For better explaining the reward, the track of
 mountain car problem is as follow:
-<p align='center'>
-<img src='./data/MountainCarTrack.png' width='50%'>
-</p>
 
+<img src="https://raw.githubusercontent.com/HuangJiaLian/DataBase0/master/uPic/MountainCarTrack.png" style="zoom:50%;" />
 
 Basically, the reward function was telling us **the car get higher position, it can get higher reward.** This result was reasonable to our intuition.
 
@@ -103,10 +97,8 @@ Besides, the shape of learned reward function doesn't change much as the trainin
 
 ### Use the learned reward function to train a policy
 To test the learned reward function was robust and transferable, I fixed the reward function at the very end to train a new policy from zero.
-<p align='center'>
-<img src='./data/AIRL_MCarV0_Training_Log_G.png' width='50%'>
-</p>
 
+<img src="/Users/mac/Github/AIRL_MountainCar/data/AIRL_MCarV0_Training_Log_G.png" style="zoom:70%;" />
 
 After 7000 episode, the generator's behavior was very close to the expert.
 
@@ -119,7 +111,6 @@ This work used a simplified version AIRL to solve OpenAI Mountain Car problem, a
 - **Reward function not depend on action is non-sense.**
 No, it make sense. For example, how to define a good golf track. Although the direction is really important, but I can design a reward function that only depend on the golf's position, if the golf in the position of good track, the reward will be higher than other position. That means that if you can pass that position, you should and must took the right action. The reward function is indirectly guiding reinforcement learning (RL) algorithm to get good policy. How to take action at a state is the work of policy, not reward function. So that reward function can only depend on state.
   
-
 - **The reward is not good, I can just draw a slop line (k>0, eg k=2) as reward function.**
 I can not bet the learned reward function is the optimal reward function, but it really make sense, and worked. Because using this learned reward function, I can train a policy from zero, which indicating this a worked reward function. And I don't think just a slop line can be better than the learned reward function, cause the agent has to up to the left hill to get enough energy to climb up to the right hill. So than the reward function should tell the agent that the state of left hill is no bad, which a slop (k>0) can't do this.
 
@@ -147,46 +138,37 @@ In the end, I want to say,
 
 ### Appendix A: Some snapshots of learned reward function over training episode
 Episode 500:
-<p align='center'>
-<img src='./data/500_learned_rewards.png' width='50%'>
-</p>
+
+<img src="https://raw.githubusercontent.com/HuangJiaLian/DataBase0/master/uPic/500_learned_rewards.png" style="zoom: 50%;" />
 
 Episode 1000:
-<p align='center'>
-<img src='./data/1000_learned_rewards.png' width='50%'>
-</p>
+
+<img src="/Users/mac/Github/AIRL_MountainCar/data/1000_learned_rewards.png" style="zoom:50%;" />
 
 Episode 2000:
-<p align='center'>
-<img src='./data/2000_learned_rewards.png' width='50%'>
-</p>
+
+<img src="/Users/mac/Github/AIRL_MountainCar/data/2000_learned_rewards.png" style="zoom:50%;" />
 
 Episode 4000:
-<p align='center'>
-<img src='./data/4000_learned_rewards.png' width='50%'>
-</p>
+
+<img src="https://raw.githubusercontent.com/HuangJiaLian/DataBase0/master/uPic/4000_learned_rewards.png" style="zoom:50%;" />
 
 Episode 8000:
-<p align='center'>
-<img src='./data/8000_learned_rewards.png' width='50%'>
-</p>
+
+<img src="https://raw.githubusercontent.com/HuangJiaLian/DataBase0/master/uPic/8000_learned_rewards.png" style="zoom:50%;" />
 
 Episode 16000:
-<p align='center'>
-<img src='./data/16000_learned_rewards.png' width='50%'>
-</p>
+
+<img src="https://raw.githubusercontent.com/HuangJiaLian/DataBase0/master/uPic/16000_learned_rewards.png" style="zoom:50%;" />
 
 Episode 23000:
-<p align='center'>
-<img src='./data/23000_learned_rewards.png' width='50%'>
-</p>
+
+<img src="https://raw.githubusercontent.com/HuangJiaLian/DataBase0/master/uPic/23000_learned_rewards.png" style="zoom:50%;" />
 
 ### Appendix B: The return comparison between stochastic and deterministic policy
-<p align='center'>
-<img src='./data/MCarV0_Testing_Log_Stochastic.png' width='50%'>
-</p>
 
-<p align='center'>
-<img src='./data/MCarV0_Testing_Log_Deterministic.png' width='50%'>
-</p>
+<img src="https://raw.githubusercontent.com/HuangJiaLian/DataBase0/master/uPic/MCarV0_Testing_Log_Stochastic.png" style="zoom:50%;" />
+
+<img src="https://raw.githubusercontent.com/HuangJiaLian/DataBase0/master/uPic/MCarV0_Testing_Log_Deterministic.png" style="zoom:50%;" />
+
 
