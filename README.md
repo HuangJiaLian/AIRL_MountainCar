@@ -55,8 +55,10 @@ def get_action(state):
 
 I used 20, 50, 200 expert demonstrations to get different experimental results, and found that 20 expert demonstrations are totally enough.
 
-### AIRL train process
+### AIRL train 
+<p align='center'>
 <img src="https://raw.githubusercontent.com/HuangJiaLian/DataBase0/master/uPic/AIRL_MCarV0_Training_Log.png" style="zoom:72%;" />
+</p>
 
 Score from discriminator:
 - Yellow: The mean return of 20 expert demonstrations;
@@ -64,7 +66,7 @@ Score from discriminator:
 
 The discriminator is trying to classify samples from experts and from generator, and the generator is trying it's best to generate samples similar to the experts, so that it can get high score from discriminator.
 
-It's clear that in the first 25000 episodes, the discriminator is learning very fast, it can tell expert samples and generator samples very easily.
+It's clear that in the first 2500 episodes, the discriminator is learning very fast, it can tell expert samples and generator samples very easily.
 
 With the learning process of generator keep going, about 2000 episodes later, the difference between expert return and generator return is getting smaller.
 
@@ -132,9 +134,6 @@ You don't understand the basics of RL. The main purpose of RL algorithms is to m
 
 - **The agent don't know the right side has higher reward, so the agent will stuck at left.**
 It's a bad question. I reject to answer.
-
-In the end, I want to say,
-*Good for you! Jack, you did very good job.*
 
 ### Appendix A: Some snapshots of learned reward function over training episode
 Episode 500:
