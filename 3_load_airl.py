@@ -4,10 +4,11 @@
 @Github: https://github.com/HuangJiaLian
 @Date: 2019-10-10 19:27:08
 @LastEditors: Jack Huang
-@LastEditTime: 2019-11-21 22:10:00
+@LastEditTime: 2021-08-24 22:10:00
 '''
 
-import tensorflow as tf 
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior() 
 import numpy as np 
 import gym, os
 import argparse
@@ -51,7 +52,7 @@ def main():
     num_expert_tra = 20 
     
     # Saver to save all the variables
-    model_save_path = './modelGAN/'
+    model_save_path = './model/'
     model_name = 'airl'
     saver = tf.train.Saver() 
     ckpt = tf.train.get_checkpoint_state(model_save_path)
@@ -95,15 +96,15 @@ def main():
             # 遍历这次游戏中的每一步
             obs = env.reset()
             for step in range(max_steps):
-                # if episode % 100 == 0:
-                #     env.render()
+                if episode % 100 == 0:
+                    env.render()
                 obs = np.stack([obs]).astype(dtype=np.float32)
 
                 # When testing set stochastic False will get better performance
-                act, v_pred = Policy.get_action(obs=obs, stochastic=True)
-                # act, v_pred = Policy.get_action(obs=obs, stochastic=False)
-                act = np.asscalar(act)
-                v_pred = np.asscalar(v_pred)
+                # act, v_pred = Policy.get_action(obs=obs, stochastic=True)
+                act, v_pred = Policy.get_action(obs=obs, stochastic=False)
+                # act = act.item()
+                # v_pred = v_pred.item()
 
                 # 和环境交互
                 next_obs, reward, done, info = env.step(act)

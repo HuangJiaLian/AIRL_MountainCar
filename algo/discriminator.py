@@ -1,13 +1,14 @@
 '''
-@Description: AIRL算法的Discriminator
+@Description: Discriminator of AIRL
 @Author: Jack Huang
 @Github: https://github.com/HuangJiaLian
 @Date: 2019-10-11 19:18:07
 @LastEditors: Jack Huang
-@LastEditTime: 2019-11-18 17:36:07
+@LastEditTime: 2021-08-24 17:36:07
 '''
 
-import tensorflow as tf 
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior() 
 import numpy as np 
 
 class Discriminator:
@@ -99,6 +100,5 @@ class Discriminator:
         return scores
 
     
-
     def get_trainable_variables(self):
         return tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, self.scope)

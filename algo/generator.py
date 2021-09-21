@@ -4,10 +4,11 @@
 @Github: https://github.com/HuangJiaLian
 @Date: 2019-10-11 19:17:36
 @LastEditors: Jack Huang
-@LastEditTime: 2019-11-15 19:04:03
+@LastEditTime: 2021-08-24 19:04:03
 '''
 
-import tensorflow as tf 
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior() 
 import copy 
 
 class Policy_net:
@@ -21,13 +22,12 @@ class Policy_net:
 
         with tf.variable_scope(name):
             self.obs = tf.placeholder(dtype=tf.float32, shape=[None] + list(ob_space.shape), name='obs')
-            # Actor
-            # Input 20 20  act_space.n act_space.n 
+            # Actor (Policy): Given a state (or observation)
+            # obtain the distribution of actions
             with tf.variable_scope('policy_net'):
                 layer_1 = tf.layers.dense(inputs=self.obs, units=20, activation=tf.tanh)
                 layer_2 = tf.layers.dense(inputs=layer_1, units=20, activation=tf.tanh)
                 layer_3 = tf.layers.dense(inputs=layer_2, units=act_space.n, activation=tf.tanh)
-                # 输出动作的概率
                 self.act_probs = tf.layers.dense(inputs=layer_3, units=act_space.n, activation=tf.nn.softmax)
 
             # Critic 
@@ -46,14 +46,15 @@ class Policy_net:
 
     def get_action(self, obs, stochastic=True):
         if stochastic:
-            return tf.get_default_session().run([self.act_stochastic, self.v_preds], feed_dict={self.obs: obs})
+            act, v_pred = tf.get_default_session().run([self.act_stochastic, self.v_preds], feed_dict={self.obs: obs})
+            return act.item(), v_pred.item()
         else:
-            return tf.get_default_session().run([self.act_deterministic, self.v_preds], feed_dict={self.obs: obs})
+            act, v_pred = tf.get_default_session().run([self.act_deterministic, self.v_preds], feed_dict={self.obs: obs})
+            return act.item(), v_pred.item()
 
     def get_trainable_variables(self):
         return tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, self.scope)
 
-    # Last Edit
     def get_distribution(self, obs):
         return tf.get_default_session().run(self.act_probs,feed_dict={self.obs: obs})
 
